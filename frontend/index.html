@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>RedHawk Android Hunter</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #050608;
+      color: #f9fbff;
+    }
+    .page { max-width: 1100px; margin: 0 auto; padding: 20px 16px 40px; }
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+    .brand { display: flex; gap: 10px; align-items: center; }
+    .brand-logo {
+      width: 32px; height: 32px; border-radius: 999px;
+      border: 2px solid #ff1744; color: #ff1744;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; box-shadow: 0 0 18px rgba(255, 23, 68, 0.6);
+    }
+    .brand-title { font-size: 18px; font-weight: 700; letter-spacing: 0.03em; }
+    .brand-sub { font-size: 11px; text-transform: uppercase; letter-spacing: 0.14em; color: #9fa6c3; }
+    .grid { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1.8fr); gap: 16px; }
+    @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+    .card {
+      border-radius: 16px; padding: 14px 16px 16px;
+      border: 1px solid #202534;
+      background: radial-gradient(circle at top left, rgba(255, 23, 68, 0.09), transparent 55%), #10131a;
+      box-shadow: 0 14px 40px rgba(0,0,0,0.6);
+    }
+    .card-title-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .card-title { font-size: 13px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #9fa6c3; }
+    .pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 4px 10px; border-radius: 999px;
+      border: 1px solid rgba(34, 197, 94, 0.5);
+      background: rgba(22, 163, 74, 0.12); color: #4ade80;
+      font-size: 11px;
+    }
+    .pill-dot { width: 6px; height: 6px; border-radius: 999px; background: #4ade80; }
+    .field-label { font-size: 12px; margin-top: 10px; margin-bottom: 4px; color: #9fa6c3; }
+    input[type="file"], input[type="text"], select {
+      width: 100%; padding: 8px 9px; font-size: 13px;
+      border-radius: 10px; border: 1px solid #202534;
+      background: rgba(5,7,13,0.9); color: #f9fbff; outline: none;
+    }
+    input[type="file"]::file-selector-button {
+      border: none; background: #ff1744; color: white;
+      border-radius: 999px; padding: 6px 12px; margin-right: 10px;
+      cursor: pointer; font-size: 12px;
+    }
+    .btn {
+      margin-top: 12px; width: 100%; border-radius: 999px;
+      border: none; padding: 10px 12px; font-size: 13px; font-weight: 600;
+      letter-spacing: 0.06em; text-transform: uppercase;
+      background: linear-gradient(135deg, #ff1744, #ff9100);
+      color: #fff; cursor: pointer;
+      box-shadow: 0 13px 30px rgba(239, 68, 68, 0.5);
+    }
+    .btn[disabled] { opacity: 0.6; cursor: not-allowed; box-shadow: none; }
+    .status { font-size: 11px; margin-top: 6px; min-height: 16px; }
+    .status-ok { color: #00e676; }
+    .status-error { color: #ff5252; }
+    .status-info { color: #9fa6c3; }
+    .scan-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 4px; }
+    .scan-table th, .scan-table td {
+      text-align: left; padding: 6px 6px; border-bottom: 1px solid #202534;
+    }
+    .scan-table th {
+      font-size: 11px; text-transform: uppercase; letter-spacing: 0.09em; color: #9fa6c3;
+    }
+    .scan-row { cursor: pointer; }
+    .scan-row:hover { background: rgba(148,163,227,0.08); }
+    .badge {
+      display: inline-flex; align-items: center; justify-content: center;
+      padding: 2px 8px; border-radius: 999px;
+      font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em;
+    }
+    .badge-status-queued { background: rgba(148,163,227,0.16); color: #a5b4fc; }
+    .badge-status-running { background: rgba(56,189,248,0.16); color: #7dd3fc; }
+    .badge-status-completed { background: rgba(34,197,94,0.16); color: #6ee7b7; }
+    .badge-status-error { background: rgba(239,68,68,0.18); color: #fca5a5; }
+    .sev-dot { width: 8px; height: 8px; border-radius: 999px; display: inline-block; margin-right: 4px; }
+    .sev-critical { background: #ef4444; }
+    .sev-high { background: #f97316; }
+    .sev-medium { background: #eab308; }
+    .sev-low { background: #22c55e; }
+    .sev-info { background: #64748b; }
+    .report-viewer {
+      margin-top: 8px; padding: 10px 11px;
+      border-radius: 12px; border: 1px solid #202534;
+      background: rgba(15,23,42,0.96); max-height: 420px;
+      overflow: auto; font-size: 12px; line-height: 1.45; white-space: pre-wrap;
+    }
+    .report-header { display: flex; justify-content: space-between; align-items: center; font-size: 12px; margin-bottom: 4px; }
+    .small-link { font-size: 11px; color: #ff9100; cursor: pointer; text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="header">
+      <div class="brand">
+        <div class="brand-logo">RH</div>
+        <div>
+          <div class="brand-title">RedHawk Android Hunter</div>
+          <div class="brand-sub">AI-POWERED APK SECURITY ANALYZER</div>
+        </div>
+      </div>
+    </header>
+
+    <div class="grid">
+      <div class="card">
+        <div class="card-title-row">
+          <div class="card-title">New Scan</div>
+          <div class="pill">
+            <div class="pill-dot"></div>
+            Backend: http://127.0.0.1:9000
+          </div>
+        </div>
+        <label class="field-label">API Key (optional)</label>
+        <input id="apikey" type="text" placeholder="X-API-Key header (leave empty if not used)" />
+        <label class="field-label">APK File</label>
+        <input id="apk" type="file" accept=".apk" />
+        <label class="field-label">App ID (optional)</label>
+        <input id="appId" type="text" placeholder="e.g. com.example.app" />
+        <label class="field-label">Mode</label>
+        <select id="mode">
+          <option value="safe">Safe</option>
+          <option value="redteam">Red Team</option>
+        </select>
+        <button class="btn" id="scanBtn">Start Scan</button>
+        <div id="status" class="status status-info"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title-row">
+          <div class="card-title">Scan History & Reports</div>
+          <div class="pill">
+            <span class="pill-dot"></span> Auto-refresh 5s
+          </div>
+        </div>
+        <table class="scan-table">
+          <thead>
+            <tr>
+              <th>APK</th>
+              <th>Status</th>
+              <th>Sev</th>
+              <th>Findings</th>
+              <th>Mode</th>
+            </tr>
+          </thead>
+          <tbody id="scanTableBody">
+            <tr><td colspan="5" style="font-size:12px; padding:6px;">No scans yet. Start one on the left.</td></tr>
+          </tbody>
+        </table>
+        <div class="report-viewer" id="reportViewer">
+          <div class="report-header">
+            <div id="reportTitle">No scan selected</div>
+            <div id="reportActions" style="font-size:11px; display:none;">
+              <span class="small-link" id="copyReportBtn">Copy report</span>
+            </div>
+          </div>
+          <pre id="reportContent">// Select a completed scan to view its AI report here.</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    const API_BASE = "http://127.0.0.1:9000";
+    const scanBtn = document.getElementById("scanBtn");
+    const statusEl = document.getElementById("status");
+    const scanTableBody = document.getElementById("scanTableBody");
+    const reportTitle = document.getElementById("reportTitle");
+    const reportContent = document.getElementById("reportContent");
+    const reportActions = document.getElementById("reportActions");
+    const copyReportBtn = document.getElementById("copyReportBtn");
+
+    function setStatus(msg, type="info") {
+      statusEl.textContent = msg;
+      statusEl.className = "status status-" + type;
+    }
+
+    function severityDot(sev) {
+      const clsMap = {
+        critical: "sev-critical",
+        high: "sev-high",
+        medium: "sev-medium",
+        low: "sev-low",
+        info: "sev-info",
+      };
+      const cls = clsMap[sev] || clsMap.info;
+      return '<span class="sev-dot ' + cls + '"></span>' + (sev ? sev[0].toUpperCase() + sev.slice(1) : "Info");
+    }
+
+    function statusBadge(status) {
+      let cls = "badge-status-queued";
+      if (status === "running") cls = "badge-status-running";
+      else if (status === "completed") cls = "badge-status-completed";
+      else if (status === "error") cls = "badge-status-error";
+      return '<span class="badge ' + cls + '">' + status.toUpperCase() + "</span>";
+    }
+
+    async function loadScans() {
+      try {
+        const apikey = document.getElementById("apikey").value.trim();
+        const res = await fetch(API_BASE + "/api/scans", {
+          headers: apikey ? { "X-API-Key": apikey } : {},
+        });
+        const data = await res.json();
+        if (!Array.isArray(data) || !data.length) {
+          scanTableBody.innerHTML = '<tr><td colspan="5" style="font-size:12px; padding:6px;">No scans yet.</td></tr>';
+          return;
+        }
+        scanTableBody.innerHTML = "";
+        for (const s of data) {
+          const tr = document.createElement("tr");
+          tr.className = "scan-row";
+          tr.dataset.scanId = s.id;
+          tr.dataset.apkName = s.apk_name;
+          const sevCounts = s.severity_counts || {};
+          let topSev = "info";
+          for (const k of ["critical","high","medium","low","info"]) {
+            if ((sevCounts[k] || 0) > 0) { topSev = k; break; }
+          }
+          tr.innerHTML = `
+            <td>${s.apk_name || "unknown.apk"}</td>
+            <td>${statusBadge(s.status)}</td>
+            <td>${severityDot(topSev)}</td>
+            <td>${s.total_findings || 0}</td>
+            <td>${s.mode || "safe"}</td>
+          `;
+          tr.addEventListener("click", () => loadReportForScan(s.id, s.apk_name));
+          scanTableBody.appendChild(tr);
+        }
+      } catch (e) {
+        console.error("loadScans error:", e);
+      }
+    }
+
+    async function loadReportForScan(scanId, apkName) {
+      try {
+        reportTitle.textContent = (apkName || "APK") + " – AI Report";
+        reportContent.textContent = "// Loading report...";
+        reportActions.style.display = "none";
+        const apikey = document.getElementById("apikey").value.trim();
+        const res = await fetch(API_BASE + "/api/reports/" + scanId + "/ai_report", {
+          headers: apikey ? { "X-API-Key": apikey } : {},
+        });
+        if (!res.ok) {
+          reportContent.textContent = "// AI report not available yet or failed.";
+          return;
+        }
+        const text = await res.text();
+        reportContent.textContent = text;
+        reportActions.style.display = "inline-flex";
+        copyReportBtn.onclick = async () => {
+          try {
+            await navigator.clipboard.writeText(text);
+            setStatus("Report copied to clipboard.", "ok");
+          } catch (err) {
+            console.error("Clipboard error:", err);
+          }
+        };
+      } catch (e) {
+        console.error("loadReportForScan error:", e);
+        reportContent.textContent = "// Error loading report.";
+      }
+    }
+
+    scanBtn.addEventListener("click", async () => {
+      const fileInput = document.getElementById("apk");
+      const appId = document.getElementById("appId").value.trim();
+      const mode = document.getElementById("mode").value;
+      const apikey = document.getElementById("apikey").value.trim();
+      if (!fileInput.files.length) {
+        setStatus("Please choose an APK first.", "error");
+        return;
+      }
+      const form = new FormData();
+      form.append("file", fileInput.files[0]);
+      form.append("app_id", appId);
+      form.append("device_id", "");
+      form.append("platform", "hackerone");
+      form.append("ai", "true");
+      form.append("mode", mode);
+
+      try {
+        scanBtn.disabled = true;
+        setStatus("Uploading APK & queuing scan...", "info");
+        const res = await fetch(API_BASE + "/api/scan", {
+          method: "POST",
+          headers: apikey ? { "X-API-Key": apikey } : {},
+          body: form,
+        });
+        if (!res.ok) {
+          const errText = await res.text();
+          console.error("scan error:", errText);
+          setStatus("Scan failed: " + errText, "error");
+          return;
+        }
+        const data = await res.json();
+        setStatus("Scan queued: " + data.id, "ok");
+        loadScans();
+      } catch (e) {
+        console.error("scan submit error:", e);
+        setStatus("Error submitting scan. Check backend.", "error");
+      } finally {
+        scanBtn.disabled = false;
+      }
+    });
+
+    loadScans();
+    setInterval(loadScans, 5000);
+  </script>
+</body>
+</html>

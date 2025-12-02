@@ -1,0 +1,6 @@
+fastapi
+uvicorn
+python-multipart
+mobsfscan
+openai>=1.0.0
+requests

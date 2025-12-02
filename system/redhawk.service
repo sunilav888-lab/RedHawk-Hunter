@@ -1,0 +1,15 @@
+[Unit]
+Description=RedHawk Android Hunter (backend + frontend)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=kali
+WorkingDirectory=/opt/RedHawk-Android-Hunter
+ExecStart=/opt/RedHawk-Android-Hunter/start.sh
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
